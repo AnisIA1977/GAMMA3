@@ -60,7 +60,6 @@ class Series(SeriesBase):
         from_attributes = True
 
 # --- Hierarchical Response Schemas (for listing trees) ---
-# These are used when listing Classes (with subclasses) or Constructors (with series)
 
 class SubClassForTree(SubClassBase):
     id: int
@@ -85,8 +84,22 @@ class ConstructorWithSeries(Constructor):
 class ArticleBase(BaseModel):
     item_code: str
     designation: str
-    location: str
+    location: Optional[str] = None
     stock_quantity: int = 0
+
+    # FSA Fields
+    unit_of_measure: str = "U"
+    supply_mode: str = "ACHAT"
+    unit_price: float = 0.0
+
+    # Planning Inputs
+    lead_time_days: int = 0
+    monthly_consumption: float = 0.0 # CMM
+
+    # Thresholds (Calculated or Override)
+    alert_threshold: int = 0
+    security_threshold: int = 0
+    minimum_threshold: int = 0
 
 class ArticleCreate(ArticleBase):
     subclass_id: int

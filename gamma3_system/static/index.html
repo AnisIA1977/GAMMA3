@@ -20,6 +20,14 @@
         .tabs { margin-bottom: 20px; }
         .tab-btn { background-color: #ddd; color: black; margin-right: 5px; }
         .tab-btn.active { background-color: #3498db; color: white; }
+
+        /* New Styles for Sections */
+        .section-title { font-size: 1.1em; color: #2c3e50; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+        .card { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        small { color: #7f8c8d; }
     </style>
 </head>
 <body>
@@ -33,11 +41,14 @@
 
         <!-- DASHBOARD TAB -->
         <div v-if="currentTab === 'dashboard'">
-            <h2>Gestion des Articles</h2>
+            <h2>Fiche Signalétique d'Article (FSA)</h2>
 
-            <div class="form-group">
-                <h3>Ajouter un Article</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div class="card">
+                <h3>Nouvel Article</h3>
+
+                <!-- Section 1: Identification & Nomenclature -->
+                <div class="section-title">1. Identification & Nomenclature</div>
+                <div class="grid-3">
                     <div>
                         <label>Classe / Sous-Classe</label>
                         <select v-model="newArticle.subclass_id">
@@ -79,43 +90,99 @@
                 </div>
                 <div style="margin-top: 10px;">
                     <label>Désignation</label>
-                    <input v-model="newArticle.designation" placeholder="Désignation de l'article">
+                    <input v-model="newArticle.designation" placeholder="Désignation complète de l'article">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+
+                <!-- Section 2: Gestion & Logistique -->
+                <div class="section-title">2. Données de Gestion</div>
+                <div class="grid-3">
                     <div>
-                        <label>Emplacement</label>
-                        <input v-model="newArticle.location" placeholder="ex: Casier A1">
+                        <label>Unité de Gestion</label>
+                        <select v-model="newArticle.unit_of_measure">
+                            <option value="U">Unité (U)</option>
+                            <option value="KG">Kilogramme (KG)</option>
+                            <option value="L">Litre (L)</option>
+                            <option value="M">Mètre (M)</option>
+                            <option value="ENS">Ensemble (ENS)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Mode d'Approvisionnement</label>
+                        <select v-model="newArticle.supply_mode">
+                            <option value="ACHAT">Achat</option>
+                            <option value="CESSION">Cession</option>
+                            <option value="REGIE">Régie</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Prix Unitaire (Est.)</label>
+                        <input type="number" step="0.01" v-model.number="newArticle.unit_price">
+                    </div>
+                </div>
+
+                <!-- Section 3: Stockage & Planification -->
+                <div class="section-title">3. Stockage & Seuils (Planification)</div>
+                <div class="grid-2">
+                    <div>
+                        <label>Emplacement Physique</label>
+                        <input v-model="newArticle.location" placeholder="ex: Casier A1-05">
                     </div>
                     <div>
                         <label>Stock Initial</label>
                         <input type="number" v-model.number="newArticle.stock_quantity">
                     </div>
                 </div>
-                <button @click="createArticle" style="margin-top: 10px;" :disabled="!isArticleFormValid" :style="{backgroundColor: isArticleFormValid ? '#3498db' : '#95a5a6'}">
-                    Créer Article <span v-if="!isArticleFormValid">(Remplir tous les champs requis)</span>
+
+                <div class="grid-4" style="margin-top: 10px; background: #f0f8ff; padding: 10px; border-radius: 4px;">
+                    <div>
+                        <label title="Délai moyen fournisseur en jours">Délai Appro (Jours)</label>
+                        <input type="number" v-model.number="newArticle.lead_time_days">
+                    </div>
+                    <div>
+                        <label title="Consommation Moyenne Mensuelle">CMM (Conso/Mois)</label>
+                        <input type="number" step="0.1" v-model.number="newArticle.monthly_consumption">
+                    </div>
+                    <div>
+                        <label title="Calculé : CMM * (Délai/30)">Seuil Alerte (Sa) <small>(Auto)</small></label>
+                        <input type="number" v-model.number="newArticle.alert_threshold" placeholder="Calcul Auto" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                    </div>
+                    <div>
+                        <label title="Calculé : 1/3 Sa">Seuil Sécu (Ss) <small>(Auto)</small></label>
+                        <input type="number" v-model.number="newArticle.security_threshold" placeholder="Calcul Auto" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                    </div>
+                </div>
+
+                <button @click="createArticle" style="margin-top: 15px; width: 100%; font-size: 1.1em;" :disabled="!isArticleFormValid" :style="{backgroundColor: isArticleFormValid ? '#3498db' : '#95a5a6'}">
+                    Enregistrer la Fiche Article <span v-if="!isArticleFormValid">(Compléter l'identification)</span>
                 </button>
             </div>
 
-            <h3>Liste des Articles</h3>
+            <h3>Répertoire des Articles</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Nomenclature (Générée)</th>
+                        <th>Nomenclature</th>
                         <th>Désignation</th>
+                        <th>Unité</th>
                         <th>Emplacement</th>
                         <th>Stock</th>
-                        <th>Détails</th>
+                        <th>Seuil (Sa)</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="art in articles" :key="art.id">
                         <td style="font-weight: bold; color: #27ae60;">{{ art.nomenclature }}</td>
                         <td>{{ art.designation }}</td>
+                        <td>{{ art.unit_of_measure }}</td>
                         <td>{{ art.location }}</td>
-                        <td>{{ art.stock_quantity }}</td>
-                        <td style="font-size: 0.9em; color: #7f8c8d;">
-                            {{ art.subclass.material_class.designation }} > {{ art.subclass.designation }}<br>
-                            {{ art.series.constructor.designation }} > {{ art.series.designation }}
+                        <td :style="{color: art.stock_quantity <= art.alert_threshold ? 'red' : 'black', fontWeight: art.stock_quantity <= art.alert_threshold ? 'bold' : 'normal'}">
+                            {{ art.stock_quantity }}
+                            <span v-if="art.stock_quantity <= art.alert_threshold">⚠️</span>
+                        </td>
+                        <td>{{ art.alert_threshold }}</td>
+                        <td>
+                            <button style="padding: 2px 5px; font-size: 0.8em;">Détails</button>
                         </td>
                     </tr>
                 </tbody>
@@ -196,7 +263,15 @@
                         item_code: '',
                         designation: '',
                         location: '',
-                        stock_quantity: 0
+                        stock_quantity: 0,
+                        unit_of_measure: 'U',
+                        supply_mode: 'ACHAT',
+                        unit_price: 0.0,
+                        alert_threshold: 0,
+                        security_threshold: 0,
+                        minimum_threshold: 0,
+                        lead_time_days: 0,
+                        monthly_consumption: 0.0
                     }
                 }
             },
@@ -259,7 +334,13 @@
                     if (!this.isArticleFormValid) return;
                     try {
                         await axios.post('/articles/', this.newArticle);
-                        this.newArticle = { subclass_id: null, series_id: null, item_code: '', designation: '', location: '', stock_quantity: 0 };
+                        // Reset form
+                        this.newArticle = {
+                            subclass_id: null, series_id: null, item_code: '', designation: '',
+                            location: '', stock_quantity: 0, unit_of_measure: 'U', supply_mode: 'ACHAT',
+                            unit_price: 0.0, alert_threshold: 0, security_threshold: 0, minimum_threshold: 0,
+                            lead_time_days: 0, monthly_consumption: 0.0
+                        };
                         this.fetchData();
                     } catch (e) {
                         alert("Erreur lors de la création: " + (e.response?.data?.detail || e.message));

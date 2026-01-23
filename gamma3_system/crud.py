@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
+import math
 
 # --- Material Class ---
 def get_material_class(db: Session, class_id: int):
@@ -17,7 +18,7 @@ def create_material_class(db: Session, material_class: schemas.MaterialClassCrea
 
 # --- SubClass ---
 def create_subclass(db: Session, subclass: schemas.SubClassCreate, class_id: int):
-    db_obj = models.SubClass(**subclass.dict(), material_class_id=class_id)
+    db_obj = models.SubClass(**subclass.model_dump(), material_class_id=class_id)
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -36,7 +37,7 @@ def create_constructor(db: Session, constructor: schemas.ConstructorCreate):
 
 # --- Series ---
 def create_series(db: Session, series: schemas.SeriesCreate, constructor_id: int):
-    db_obj = models.Series(**series.dict(), constructor_id=constructor_id)
+    db_obj = models.Series(**series.model_dump(), constructor_id=constructor_id)
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -47,7 +48,31 @@ def get_articles(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Article).offset(skip).limit(limit).all()
 
 def create_article(db: Session, article: schemas.ArticleCreate):
-    db_obj = models.Article(**article.dict())
+    data = article.model_dump()
+
+    # --- Planning Logic (Phase 2) ---
+    # Inputs: CMM (monthly_consumption), Lead Time (lead_time_days)
+    # Rules:
+    # 1. Sa = CMM * (Lead Time / 30)
+    # 2. Ss = 1/3 * Sa
+
+    cmm = data.get('monthly_consumption', 0)
+    lead_time = data.get('lead_time_days', 0)
+
+    # Auto-Calculate Sa if not manually overridden (or if 0)
+    if data.get('alert_threshold', 0) == 0 and cmm > 0 and lead_time > 0:
+        # Sa = CMM * (d / 30)
+        # Round up to nearest integer for safety
+        sa_calc = (cmm * lead_time) / 30.0
+        data['alert_threshold'] = math.ceil(sa_calc)
+
+    # Auto-Calculate Ss if not manually overridden (or if 0)
+    sa = data.get('alert_threshold', 0)
+    if data.get('security_threshold', 0) == 0 and sa > 0:
+        # Ss = 1/3 * Sa
+        data['security_threshold'] = math.ceil(sa / 3.0)
+
+    db_obj = models.Article(**data)
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
