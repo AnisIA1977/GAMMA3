@@ -41,22 +41,30 @@
                     <div>
                         <label>Classe / Sous-Classe</label>
                         <select v-model="newArticle.subclass_id">
+                            <option :value="null" disabled>-- Sélectionner --</option>
                             <optgroup v-for="cls in classes" :label="cls.designation + ' (' + cls.code + ')'">
                                 <option v-for="sub in cls.subclasses" :value="sub.id">
                                     {{ sub.code }} - {{ sub.designation }}
                                 </option>
                             </optgroup>
                         </select>
+                        <small v-if="classes.length > 0 && classes.every(c => c.subclasses.length === 0)" style="color: red;">
+                            ⚠️ Aucune sous-classe. Veuillez en créer dans "Configuration".
+                        </small>
                     </div>
                     <div>
                         <label>Constructeur / Série</label>
                         <select v-model="newArticle.series_id">
+                            <option :value="null" disabled>-- Sélectionner --</option>
                             <optgroup v-for="cons in constructors" :label="cons.designation + ' (' + cons.code + ')'">
                                 <option v-for="ser in cons.series" :value="ser.id">
                                     {{ ser.code }} - {{ ser.designation }}
                                 </option>
                             </optgroup>
                         </select>
+                        <small v-if="constructors.length > 0 && constructors.every(c => c.series.length === 0)" style="color: red;">
+                            ⚠️ Aucune série. Veuillez en créer dans "Configuration".
+                        </small>
                     </div>
                     <div>
                         <label>Code Item (4 chiffres)</label>
@@ -77,7 +85,9 @@
                         <input type="number" v-model.number="newArticle.stock_quantity">
                     </div>
                 </div>
-                <button @click="createArticle" style="margin-top: 10px;">Créer Article</button>
+                <button @click="createArticle" style="margin-top: 10px;" :disabled="!isArticleFormValid" :style="{backgroundColor: isArticleFormValid ? '#3498db' : '#95a5a6'}">
+                    Créer Article <span v-if="!isArticleFormValid">(Remplir tous les champs requis)</span>
+                </button>
             </div>
 
             <h3>Liste des Articles</h3>
@@ -184,6 +194,14 @@
                     }
                 }
             },
+            computed: {
+                isArticleFormValid() {
+                    return this.newArticle.subclass_id &&
+                           this.newArticle.series_id &&
+                           this.newArticle.item_code.length === 4 &&
+                           this.newArticle.designation.length > 0;
+                }
+            },
             mounted() {
                 this.fetchData()
             },
@@ -232,9 +250,14 @@
                     this.fetchData();
                 },
                 async createArticle() {
-                    await axios.post('/articles/', this.newArticle);
-                    this.newArticle = { subclass_id: null, series_id: null, item_code: '', designation: '', location: '', stock_quantity: 0 };
-                    this.fetchData();
+                    if (!this.isArticleFormValid) return;
+                    try {
+                        await axios.post('/articles/', this.newArticle);
+                        this.newArticle = { subclass_id: null, series_id: null, item_code: '', designation: '', location: '', stock_quantity: 0 };
+                        this.fetchData();
+                    } catch (e) {
+                        alert("Erreur lors de la création: " + (e.response?.data?.detail || e.message));
+                    }
                 }
             }
         }).mount('#app')
