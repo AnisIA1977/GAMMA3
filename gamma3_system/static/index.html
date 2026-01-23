@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GAMMA3.0 System</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .tabs { margin-bottom: 20px; }
+        .tab-btn { background-color: #ddd; color: black; margin-right: 5px; }
+        .tab-btn.active { background-color: #3498db; color: white; }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <h1>GAMMA3.0 - Gestion Automatisée du Matériel</h1>
+
+        <div class="tabs">
+            <button class="tab-btn" :class="{active: currentTab === 'dashboard'}" @click="currentTab = 'dashboard'">Tableau de Bord</button>
+            <button class="tab-btn" :class="{active: currentTab === 'config'}" @click="currentTab = 'config'">Configuration (Classes/Constructeurs)</button>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div v-if="currentTab === 'dashboard'">
+            <h2>Gestion des Articles</h2>
+
+            <div class="form-group">
+                <h3>Ajouter un Article</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Classe / Sous-Classe</label>
+                        <select v-model="newArticle.subclass_id">
+                            <optgroup v-for="cls in classes" :label="cls.designation + ' (' + cls.code + ')'">
+                                <option v-for="sub in cls.subclasses" :value="sub.id">
+                                    {{ sub.code }} - {{ sub.designation }}
+                                </option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Constructeur / Série</label>
+                        <select v-model="newArticle.series_id">
+                            <optgroup v-for="cons in constructors" :label="cons.designation + ' (' + cons.code + ')'">
+                                <option v-for="ser in cons.series" :value="ser.id">
+                                    {{ ser.code }} - {{ ser.designation }}
+                                </option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Code Item (4 chiffres)</label>
+                        <input v-model="newArticle.item_code" placeholder="ex: 0001" maxlength="4">
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label>Désignation</label>
+                    <input v-model="newArticle.designation" placeholder="Désignation de l'article">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label>Emplacement</label>
+                        <input v-model="newArticle.location" placeholder="ex: Casier A1">
+                    </div>
+                    <div>
+                        <label>Stock Initial</label>
+                        <input type="number" v-model.number="newArticle.stock_quantity">
+                    </div>
+                </div>
+                <button @click="createArticle" style="margin-top: 10px;">Créer Article</button>
+            </div>
+
+            <h3>Liste des Articles</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nomenclature (Générée)</th>
+                        <th>Désignation</th>
+                        <th>Emplacement</th>
+                        <th>Stock</th>
+                        <th>Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="art in articles" :key="art.id">
+                        <td style="font-weight: bold; color: #27ae60;">{{ art.nomenclature }}</td>
+                        <td>{{ art.designation }}</td>
+                        <td>{{ art.location }}</td>
+                        <td>{{ art.stock_quantity }}</td>
+                        <td style="font-size: 0.9em; color: #7f8c8d;">
+                            {{ art.subclass.material_class.designation }} > {{ art.subclass.designation }}<br>
+                            {{ art.series.constructor.designation }} > {{ art.series.designation }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CONFIGURATION TAB -->
+        <div v-if="currentTab === 'config'">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- CLASSES -->
+                <div>
+                    <h3>Classes & Sous-Classes</h3>
+                    <div class="form-group">
+                        <label>Nouvelle Classe</label>
+                        <input v-model="newClass.code" placeholder="Code (ex: 1)" style="width: 30%;">
+                        <input v-model="newClass.designation" placeholder="Désignation" style="width: 60%;">
+                        <button @click="createClass">Ajouter</button>
+                    </div>
+                    <div v-for="cls in classes" :key="cls.id" style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
+                        <strong>{{ cls.code }} - {{ cls.designation }}</strong>
+                        <div style="margin-left: 20px; margin-top: 5px;">
+                            <div v-for="sub in cls.subclasses" :key="sub.id">
+                                {{ sub.code }} - {{ sub.designation }}
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <input v-model="newSubClass[cls.id].code" placeholder="Code S/C" style="width: 60px;">
+                                <input v-model="newSubClass[cls.id].designation" placeholder="Désignation S/C">
+                                <button @click="createSubClass(cls.id)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONSTRUCTORS -->
+                <div>
+                    <h3>Constructeurs & Séries</h3>
+                    <div class="form-group">
+                        <label>Nouveau Constructeur</label>
+                        <input v-model="newConstructor.code" placeholder="Code (ex: MT)" style="width: 30%;">
+                        <input v-model="newConstructor.designation" placeholder="Désignation" style="width: 60%;">
+                        <button @click="createConstructor">Ajouter</button>
+                    </div>
+                    <div v-for="cons in constructors" :key="cons.id" style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
+                        <strong>{{ cons.code }} - {{ cons.designation }}</strong>
+                        <div style="margin-left: 20px; margin-top: 5px;">
+                            <div v-for="ser in cons.series" :key="ser.id">
+                                {{ ser.code }} - {{ ser.designation }}
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <input v-model="newSeries[cons.id].code" placeholder="Code Série" style="width: 60px;">
+                                <input v-model="newSeries[cons.id].designation" placeholder="Désignation Série">
+                                <button @click="createSeries(cons.id)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    currentTab: 'dashboard',
+                    classes: [],
+                    constructors: [],
+                    articles: [],
+                    newClass: { code: '', designation: '' },
+                    newSubClass: {}, // Map class_id -> {code, designation}
+                    newConstructor: { code: '', designation: '' },
+                    newSeries: {}, // Map constructor_id -> {code, designation}
+                    newArticle: {
+                        subclass_id: null,
+                        series_id: null,
+                        item_code: '',
+                        designation: '',
+                        location: '',
+                        stock_quantity: 0
+                    }
+                }
+            },
+            mounted() {
+                this.fetchData()
+            },
+            methods: {
+                async fetchData() {
+                    try {
+                        const [resClasses, resConstructors, resArticles] = await Promise.all([
+                            axios.get('/classes/'),
+                            axios.get('/constructors/'),
+                            axios.get('/articles/')
+                        ]);
+                        this.classes = resClasses.data;
+                        this.constructors = resConstructors.data;
+                        this.articles = resArticles.data;
+
+                        // Init input models
+                        this.classes.forEach(c => {
+                            if (!this.newSubClass[c.id]) this.newSubClass[c.id] = { code: '', designation: '' };
+                        });
+                        this.constructors.forEach(c => {
+                            if (!this.newSeries[c.id]) this.newSeries[c.id] = { code: '', designation: '' };
+                        });
+
+                    } catch (error) {
+                        console.error("Error fetching data:", error);
+                    }
+                },
+                async createClass() {
+                    await axios.post('/classes/', this.newClass);
+                    this.newClass = { code: '', designation: '' };
+                    this.fetchData();
+                },
+                async createSubClass(classId) {
+                    await axios.post(`/classes/${classId}/subclasses/`, this.newSubClass[classId]);
+                    this.newSubClass[classId] = { code: '', designation: '' };
+                    this.fetchData();
+                },
+                async createConstructor() {
+                    await axios.post('/constructors/', this.newConstructor);
+                    this.newConstructor = { code: '', designation: '' };
+                    this.fetchData();
+                },
+                async createSeries(constructorId) {
+                    await axios.post(`/constructors/${constructorId}/series/`, this.newSeries[constructorId]);
+                    this.newSeries[constructorId] = { code: '', designation: '' };
+                    this.fetchData();
+                },
+                async createArticle() {
+                    await axios.post('/articles/', this.newArticle);
+                    this.newArticle = { subclass_id: null, series_id: null, item_code: '', designation: '', location: '', stock_quantity: 0 };
+                    this.fetchData();
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
