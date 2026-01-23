@@ -43,13 +43,16 @@
                         <select v-model="newArticle.subclass_id">
                             <option :value="null" disabled>-- Sélectionner --</option>
                             <optgroup v-for="cls in classes" :label="cls.designation + ' (' + cls.code + ')'">
+                                <option v-if="cls.subclasses.length === 0" disabled>
+                                    (Aucune sous-classe définie)
+                                </option>
                                 <option v-for="sub in cls.subclasses" :value="sub.id">
                                     {{ sub.code }} - {{ sub.designation }}
                                 </option>
                             </optgroup>
                         </select>
                         <small v-if="classes.length > 0 && classes.every(c => c.subclasses.length === 0)" style="color: red;">
-                            ⚠️ Aucune sous-classe. Veuillez en créer dans "Configuration".
+                            ⚠️ Aucune sous-classe disponible.
                         </small>
                     </div>
                     <div>
@@ -57,13 +60,16 @@
                         <select v-model="newArticle.series_id">
                             <option :value="null" disabled>-- Sélectionner --</option>
                             <optgroup v-for="cons in constructors" :label="cons.designation + ' (' + cons.code + ')'">
+                                <option v-if="cons.series.length === 0" disabled>
+                                    (Aucune série définie)
+                                </option>
                                 <option v-for="ser in cons.series" :value="ser.id">
                                     {{ ser.code }} - {{ ser.designation }}
                                 </option>
                             </optgroup>
                         </select>
                         <small v-if="constructors.length > 0 && constructors.every(c => c.series.length === 0)" style="color: red;">
-                            ⚠️ Aucune série. Veuillez en créer dans "Configuration".
+                            ⚠️ Aucune série disponible.
                         </small>
                     </div>
                     <div>
