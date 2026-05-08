@@ -29,6 +29,9 @@ def read_material_classes(skip: int = 0, limit: int = 100, db: Session = Depends
 
 @app.post("/classes/{class_id}/subclasses/", response_model=schemas.SubClass)
 def create_subclass(class_id: int, subclass: schemas.SubClassCreate, db: Session = Depends(get_db)):
+    db_class = crud.get_material_class(db, class_id=class_id)
+    if db_class is None:
+        raise HTTPException(status_code=404, detail="Material Class not found")
     return crud.create_subclass(db=db, subclass=subclass, class_id=class_id)
 
 # --- Constructors & Series ---

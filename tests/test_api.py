@@ -79,3 +79,31 @@ def test_article_listing(client):
     res = client.get("/articles/")
     assert res.status_code == 200
     assert len(res.json()) > 0
+
+def test_create_subclass(client):
+    """
+    Verifies that a subclass can be created under an existing material class.
+    """
+    # Create a material class first
+    res = client.post("/classes/", json={"code": "2", "designation": "Matériel Electrique"})
+    assert res.status_code == 200
+    class_id = res.json()["id"]
+
+    # Create a subclass under this class
+    res = client.post(f"/classes/{class_id}/subclasses/", json={"code": "01", "designation": "Câbles"})
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["code"] == "01"
+    assert data["designation"] == "Câbles"
+    assert data["material_class_id"] == class_id
+    assert "id" in data
+    assert data["material_class"]["code"] == "2"
+
+def test_create_subclass_not_found(client):
+    """
+    Verifies that creating a subclass under a non-existent material class returns a 404.
+    """
+    res = client.post("/classes/9999/subclasses/", json={"code": "99", "designation": "Invalid"})
+    assert res.status_code == 404
+    assert res.json()["detail"] == "Material Class not found"
