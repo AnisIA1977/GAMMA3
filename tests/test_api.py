@@ -29,6 +29,33 @@ def client():
     # Drop tables
     Base.metadata.drop_all(bind=engine)
 
+def test_create_material_class_success(client):
+    res = client.post("/classes/", json={"code": "2", "designation": "Matériel Electrique"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["code"] == "2"
+    assert data["designation"] == "Matériel Electrique"
+    assert "id" in data
+
+def test_create_material_class_duplicate(client):
+    # Setup initial class
+    res = client.post("/classes/", json={"code": "3", "designation": "Original Class"})
+    assert res.status_code == 200
+
+    # Try creating it again
+    res_dup = client.post("/classes/", json={"code": "3", "designation": "Duplicate Class"})
+    assert res_dup.status_code == 400
+    assert res_dup.json()["detail"] == "Material Class with this code already exists"
+
+def test_create_material_class_missing_fields(client):
+    # Missing 'designation'
+    res = client.post("/classes/", json={"code": "4"})
+    assert res.status_code == 422
+
+    # Missing 'code'
+    res2 = client.post("/classes/", json={"designation": "Matériel Sans Code"})
+    assert res2.status_code == 422
+
 def test_nomenclature_generation(client):
     """
     Verifies the specific example from the documentation:

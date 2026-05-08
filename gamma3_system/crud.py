@@ -6,6 +6,9 @@ import math
 def get_material_class(db: Session, class_id: int):
     return db.query(models.MaterialClass).filter(models.MaterialClass.id == class_id).first()
 
+def get_material_class_by_code(db: Session, code: str):
+    return db.query(models.MaterialClass).filter(models.MaterialClass.code == code).first()
+
 def get_material_classes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.MaterialClass).offset(skip).limit(limit).all()
 
