@@ -1,0 +1,25 @@
+<div class="flex flex-col min-h-screen bg-slate-100 font-sans">
+  <!-- Topbar minimaliste -->
+  <header class="bg-gamma-dark text-white p-4 shadow-md flex justify-between items-center z-10 relative">
+    <div class="flex items-center space-x-3">
+      <!-- Un petit icon shield pour le coté militaire -->
+      <i class="pi pi-shield text-gamma-accent text-2xl"></i>
+      <span class="text-xl font-bold tracking-wider">GAMMA 3</span>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full cursor-pointer hover:bg-slate-700 transition">
+        <i class="pi pi-globe text-sm"></i>
+        <span class="text-sm font-medium">Français</span>
+      </div>
+      <div class="w-8 h-8 rounded-full bg-gamma-accent flex items-center justify-center text-white font-bold shadow-sm">
+        DA
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow">
+    <router-outlet></router-outlet>
+  </main>
+</div>

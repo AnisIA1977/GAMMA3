@@ -1,0 +1,45 @@
+.animation-fadein {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Impression Fiche Complète */
+@media print {
+  @page { margin: 10mm; size: A4 portrait; }
+
+  /* En mode print, on cache la vue web classique par défaut si un mode est actif */
+  body.print-document-mode .web-container,
+  body.print-label-mode .web-container {
+    display: none !important;
+  }
+}
+
+/* Base states */
+.print-label-container,
+.print-document-container {
+  display: none;
+}
+
+/* Mode Impression Étiquette */
+body.print-label-mode {
+  background: white;
+}
+
+body.print-label-mode .print-label-container {
+  display: flex !important;
+  background: white;
+}
+
+/* Mode Impression Document A4 Officiel */
+body.print-document-mode {
+  background: white;
+}
+
+body.print-document-mode .print-document-container {
+  display: flex !important;
+  background: white;
+}
