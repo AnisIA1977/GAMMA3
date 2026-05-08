@@ -5,7 +5,6 @@ import pytest
 
 from gamma3_system.main import app, get_db
 from gamma3_system.database import Base
-from gamma3_system import models
 
 # Use an in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
