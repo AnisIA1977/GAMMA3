@@ -50,15 +50,28 @@ public class ItemUploadController {
     private ResponseEntity<Item> handleFileUpload(UUID id, MultipartFile file, String subDir, String fieldType) {
         return itemRepository.findById(id).map(item -> {
             try {
-                String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+                String originalFilename = file.getOriginalFilename();
+                if (originalFilename == null) {
+                    return ResponseEntity.badRequest().<Item>build();
+                }
+
+                String fileName = StringUtils.cleanPath(originalFilename);
+                if (fileName.contains("..")) {
+                    return ResponseEntity.badRequest().<Item>build();
+                }
+
                 String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
-                Path uploadPath = Paths.get(UPLOAD_DIR + subDir);
+                Path uploadPath = Paths.get(UPLOAD_DIR + subDir).toAbsolutePath().normalize();
                 
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
-                Path filePath = uploadPath.resolve(uniqueFileName);
+                Path filePath = uploadPath.resolve(uniqueFileName).normalize();
+                if (!filePath.startsWith(uploadPath)) {
+                    return ResponseEntity.badRequest().<Item>build();
+                }
+
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
                 String fileUrl = "http://localhost:8080/uploads/" + subDir + "/" + uniqueFileName;
