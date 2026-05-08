@@ -79,3 +79,35 @@ def test_article_listing(client):
     res = client.get("/articles/")
     assert res.status_code == 200
     assert len(res.json()) > 0
+
+def test_create_constructor(client):
+    """
+    Verifies that the create_constructor CRUD function works via the API.
+    """
+    # 1. Test successful creation (Happy path)
+    constructor_data = {
+        "code": "XYZ",
+        "designation": "XYZ Corporation"
+    }
+    res = client.post("/constructors/", json=constructor_data)
+    assert res.status_code == 200
+    data = res.json()
+    assert "id" in data
+    assert data["code"] == constructor_data["code"]
+    assert data["designation"] == constructor_data["designation"]
+    created_id = data["id"]
+
+    # 2. Test reading back constructors includes the new one
+    res = client.get("/constructors/")
+    assert res.status_code == 200
+    constructors = res.json()
+    found = any(c["id"] == created_id for c in constructors)
+    assert found, "Created constructor not found in the list of constructors"
+
+    # 3. Test missing required field (Validation error)
+    invalid_data = {
+        "code": "ERR"
+        # designation is missing
+    }
+    res = client.post("/constructors/", json=invalid_data)
+    assert res.status_code == 422  # Unprocessable Entity
