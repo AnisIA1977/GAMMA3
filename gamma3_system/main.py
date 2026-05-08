@@ -21,6 +21,9 @@ def get_db():
 # --- Material Classes & SubClasses ---
 @app.post("/classes/", response_model=schemas.MaterialClass)
 def create_material_class(material_class: schemas.MaterialClassCreate, db: Session = Depends(get_db)):
+    db_class = crud.get_material_class_by_code(db, code=material_class.code)
+    if db_class:
+        raise HTTPException(status_code=400, detail="Material Class with this code already exists")
     return crud.create_material_class(db=db, material_class=material_class)
 
 @app.get("/classes/", response_model=List[schemas.MaterialClassWithSubclasses])
