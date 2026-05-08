@@ -1,9 +1,11 @@
 import requests
 import sys
+import time
 
 BASE_URL = "http://127.0.0.1:8000"
 
 def seed_data():
+    start_time = time.time()
     print(f"Seeding data to {BASE_URL}...")
 
     # --- 1. Classes ---
@@ -20,19 +22,17 @@ def seed_data():
 
     class_ids = {} # Map code -> id
 
-    for cls in classes:
-        try:
-            r = requests.post(f"{BASE_URL}/classes/", json=cls)
-            if r.status_code == 200:
-                print(f"Created Class: {cls['code']} - {cls['designation']}")
-                class_ids[cls['code']] = r.json()['id']
-            else:
-                print(f"Skipped/Error Class {cls['code']}: {r.text}")
-                # Try to get existing ID if it failed (likely exists)
-                # Ideally we'd implement a get-by-code or just list all, but for simple seeding this is fine.
-        except Exception as e:
-            print(f"Error connecting: {e}")
-            return
+    try:
+        r = requests.post(f"{BASE_URL}/classes/bulk/", json=classes)
+        if r.status_code == 200:
+            for cls_data in r.json():
+                print(f"Created Class: {cls_data['code']} - {cls_data['designation']}")
+                class_ids[cls_data['code']] = cls_data['id']
+        else:
+            print(f"Error creating classes in bulk: {r.text}")
+    except Exception as e:
+        print(f"Error connecting: {e}")
+        return
 
     # --- 2. SubClasses (For Class 1 - Mécanique) ---
     if "1" in class_ids:
@@ -51,12 +51,12 @@ def seed_data():
         ]
 
         cid = class_ids["1"]
-        for sub in subclasses_1:
-            r = requests.post(f"{BASE_URL}/classes/{cid}/subclasses/", json=sub)
-            if r.status_code == 200:
-                print(f"  Created SubClass: {sub['code']}")
-            else:
-                print(f"  Error SubClass {sub['code']}: {r.text}")
+        r = requests.post(f"{BASE_URL}/classes/{cid}/subclasses/bulk/", json=subclasses_1)
+        if r.status_code == 200:
+            for sub_data in r.json():
+                print(f"  Created SubClass: {sub_data['code']}")
+        else:
+            print(f"  Error SubClass bulk insert: {r.text}")
 
     # --- 3. Constructors ---
     constructors = [
@@ -79,13 +79,13 @@ def seed_data():
 
     cons_ids = {}
 
-    for cons in constructors:
-        r = requests.post(f"{BASE_URL}/constructors/", json=cons)
-        if r.status_code == 200:
-            print(f"Created Constructor: {cons['code']}")
-            cons_ids[cons['code']] = r.json()['id']
-        else:
-            print(f"Skipped/Error Constructor {cons['code']}: {r.text}")
+    r = requests.post(f"{BASE_URL}/constructors/bulk/", json=constructors)
+    if r.status_code == 200:
+        for cons_data in r.json():
+            print(f"Created Constructor: {cons_data['code']}")
+            cons_ids[cons_data['code']] = cons_data['id']
+    else:
+        print(f"Error creating constructors in bulk: {r.text}")
 
     # --- 4. Series (For MTU) ---
     if "MT" in cons_ids:
@@ -99,14 +99,15 @@ def seed_data():
         ]
 
         cid = cons_ids["MT"]
-        for ser in series_mtu:
-            r = requests.post(f"{BASE_URL}/constructors/{cid}/series/", json=ser)
-            if r.status_code == 200:
-                print(f"  Created Series: {ser['code']}")
-            else:
-                print(f"  Error Series {ser['code']}: {r.text}")
+        r = requests.post(f"{BASE_URL}/constructors/{cid}/series/bulk/", json=series_mtu)
+        if r.status_code == 200:
+            for ser_data in r.json():
+                print(f"  Created Series: {ser_data['code']}")
+        else:
+            print(f"  Error Series bulk insert: {r.text}")
 
-    print("Seeding complete.")
+    end_time = time.time()
+    print(f"Seeding complete in {end_time - start_time:.4f} seconds.")
 
 if __name__ == "__main__":
     seed_data()
