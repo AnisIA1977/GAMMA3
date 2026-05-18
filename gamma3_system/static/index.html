@@ -2,42 +2,60 @@
 <html>
 <head>
     <title>GAMMA3.0 System</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="preconnect" href="https://unpkg.com">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        h2 { color: #34495e; margin-top: 30px; }
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --text-color: #2c3e50;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: var(--text-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 0; }
+        h2, h3 { color: #34495e; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #2980b9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .tabs { margin-bottom: 20px; }
-        .tab-btn { background-color: #ddd; color: black; margin-right: 5px; }
-        .tab-btn.active { background-color: #3498db; color: white; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #4a5568; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 6px; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); }
+        button { background-color: var(--primary-color); color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s, transform 0.1s; font-weight: 600; }
+        button:hover { background-color: var(--primary-hover); }
+        button:active { transform: translateY(1px); }
+        button:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 15px; text-align: left; }
+        th { background-color: #f8fafc; font-weight: 600; color: #4a5568; text-transform: uppercase; font-size: 0.85em; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+        .tabs { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .tab-btn { background-color: transparent; color: #718096; border: 1px solid transparent; }
+        .tab-btn:hover { background-color: #edf2f7; color: var(--text-color); }
+        .tab-btn.active { background-color: var(--primary-color); color: white; }
 
         /* New Styles for Sections */
-        .section-title { font-size: 1.1em; color: #2c3e50; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
-        .card { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
-        small { color: #7f8c8d; }
+        .section-title { font-size: 1.1em; color: var(--text-color); margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; font-weight: 600; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .card { background: #ffffff; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        small { color: #718096; }
     </style>
 </head>
 <body>
     <div id="app" class="container">
         <h1>GAMMA3.0 - Gestion Automatisée du Matériel</h1>
 
-        <div class="tabs">
-            <button class="tab-btn" :class="{active: currentTab === 'dashboard'}" @click="currentTab = 'dashboard'">Tableau de Bord</button>
-            <button class="tab-btn" :class="{active: currentTab === 'config'}" @click="currentTab = 'config'">Configuration (Classes/Constructeurs)</button>
-        </div>
+        <div v-if="isLoading" class="loading" style="text-align: center; font-size: 1.2em; padding: 20px;">Chargement des données...</div>
+
+        <div v-else>
+            <div class="tabs">
+                <button class="tab-btn" :class="{active: currentTab === 'dashboard'}" @click="currentTab = 'dashboard'">Tableau de Bord</button>
+                <button class="tab-btn" :class="{active: currentTab === 'config'}" @click="currentTab = 'config'">Configuration (Classes/Constructeurs)</button>
+            </div>
 
         <!-- DASHBOARD TAB -->
         <div v-if="currentTab === 'dashboard'">
@@ -197,19 +215,21 @@
                     <h3>Classes & Sous-Classes</h3>
                     <div class="form-group">
                         <label>Nouvelle Classe</label>
-                        <input v-model="newClass.code" placeholder="Code (ex: 1)" style="width: 30%;">
-                        <input v-model="newClass.designation" placeholder="Désignation" style="width: 60%;">
-                        <button @click="createClass">Ajouter</button>
+                        <div style="display: flex; gap: 10px;">
+                            <input v-model="newClass.code" placeholder="Code (ex: 1)" style="width: 30%;">
+                            <input v-model="newClass.designation" placeholder="Désignation" style="flex: 1;">
+                            <button @click="createClass">Ajouter</button>
+                        </div>
                     </div>
-                    <div v-for="cls in classes" :key="cls.id" style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
-                        <strong>{{ cls.code }} - {{ cls.designation }}</strong>
-                        <div style="margin-left: 20px; margin-top: 5px;">
-                            <div v-for="sub in cls.subclasses" :key="sub.id">
+                    <div v-for="cls in classes" :key="cls.id" style="border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 8px; background: white;">
+                        <strong style="color: var(--primary-color);">{{ cls.code }} - {{ cls.designation }}</strong>
+                        <div style="margin-left: 20px; margin-top: 10px;">
+                            <div v-for="sub in cls.subclasses" :key="sub.id" style="padding: 5px 0; border-bottom: 1px solid #f0f0f0;">
                                 {{ sub.code }} - {{ sub.designation }}
                             </div>
-                            <div style="margin-top: 5px;">
-                                <input v-model="newSubClass[cls.id].code" placeholder="Code S/C" style="width: 60px;">
-                                <input v-model="newSubClass[cls.id].designation" placeholder="Désignation S/C">
+                            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                <input v-model="newSubClass[cls.id].code" placeholder="Code S/C" style="width: 80px;">
+                                <input v-model="newSubClass[cls.id].designation" placeholder="Désignation S/C" style="flex: 1;">
                                 <button @click="createSubClass(cls.id)">+</button>
                             </div>
                         </div>
@@ -221,19 +241,21 @@
                     <h3>Constructeurs & Séries</h3>
                     <div class="form-group">
                         <label>Nouveau Constructeur</label>
-                        <input v-model="newConstructor.code" placeholder="Code (ex: MT)" style="width: 30%;">
-                        <input v-model="newConstructor.designation" placeholder="Désignation" style="width: 60%;">
-                        <button @click="createConstructor">Ajouter</button>
+                        <div style="display: flex; gap: 10px;">
+                            <input v-model="newConstructor.code" placeholder="Code (ex: MT)" style="width: 30%;">
+                            <input v-model="newConstructor.designation" placeholder="Désignation" style="flex: 1;">
+                            <button @click="createConstructor">Ajouter</button>
+                        </div>
                     </div>
-                    <div v-for="cons in constructors" :key="cons.id" style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px;">
-                        <strong>{{ cons.code }} - {{ cons.designation }}</strong>
-                        <div style="margin-left: 20px; margin-top: 5px;">
-                            <div v-for="ser in cons.series" :key="ser.id">
+                    <div v-for="cons in constructors" :key="cons.id" style="border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; border-radius: 8px; background: white;">
+                        <strong style="color: var(--primary-color);">{{ cons.code }} - {{ cons.designation }}</strong>
+                        <div style="margin-left: 20px; margin-top: 10px;">
+                            <div v-for="ser in cons.series" :key="ser.id" style="padding: 5px 0; border-bottom: 1px solid #f0f0f0;">
                                 {{ ser.code }} - {{ ser.designation }}
                             </div>
-                            <div style="margin-top: 5px;">
-                                <input v-model="newSeries[cons.id].code" placeholder="Code Série" style="width: 60px;">
-                                <input v-model="newSeries[cons.id].designation" placeholder="Désignation Série">
+                            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                <input v-model="newSeries[cons.id].code" placeholder="Code Série" style="width: 80px;">
+                                <input v-model="newSeries[cons.id].designation" placeholder="Désignation Série" style="flex: 1;">
                                 <button @click="createSeries(cons.id)">+</button>
                             </div>
                         </div>
@@ -241,14 +263,18 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
         const { createApp } = Vue
 
         createApp({
             data() {
                 return {
+                    isLoading: true,
                     currentTab: 'dashboard',
                     classes: [],
                     constructors: [],
@@ -308,6 +334,8 @@
 
                     } catch (error) {
                         console.error("Error fetching data:", error);
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
                 async createClass() {
