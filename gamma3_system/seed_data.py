@@ -1,7 +1,7 @@
 import requests
-import sys
 
 BASE_URL = "http://127.0.0.1:8000"
+
 
 def seed_data():
     print(f"Seeding data to {BASE_URL}...")
@@ -18,14 +18,14 @@ def seed_data():
         {"code": "8", "designation": "Matériel d'équipement général de vie à bord"},
     ]
 
-    class_ids = {} # Map code -> id
+    class_ids = {}  # Map code -> id
 
     for cls in classes:
         try:
             r = requests.post(f"{BASE_URL}/classes/", json=cls)
             if r.status_code == 200:
                 print(f"Created Class: {cls['code']} - {cls['designation']}")
-                class_ids[cls['code']] = r.json()['id']
+                class_ids[cls["code"]] = r.json()["id"]
             else:
                 print(f"Skipped/Error Class {cls['code']}: {r.text}")
                 # Try to get existing ID if it failed (likely exists)
@@ -83,7 +83,7 @@ def seed_data():
         r = requests.post(f"{BASE_URL}/constructors/", json=cons)
         if r.status_code == 200:
             print(f"Created Constructor: {cons['code']}")
-            cons_ids[cons['code']] = r.json()['id']
+            cons_ids[cons["code"]] = r.json()["id"]
         else:
             print(f"Skipped/Error Constructor {cons['code']}: {r.text}")
 
@@ -107,6 +107,7 @@ def seed_data():
                 print(f"  Error Series {ser['code']}: {r.text}")
 
     print("Seeding complete.")
+
 
 if __name__ == "__main__":
     seed_data()
