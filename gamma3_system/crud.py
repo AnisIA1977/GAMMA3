@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
-import math
+from math import ceil
 
 # --- Material Class ---
 def get_material_class(db: Session, class_id: int):
@@ -99,13 +99,13 @@ def create_article(db: Session, article: schemas.ArticleCreate):
         # Sa = CMM * (d / 30)
         # Round up to nearest integer for safety
         sa_calc = (cmm * lead_time) / 30.0
-        data['alert_threshold'] = math.ceil(sa_calc)
+        data['alert_threshold'] = ceil(sa_calc)
 
     # Auto-Calculate Ss if not manually overridden (or if 0)
     sa = data.get('alert_threshold', 0)
     if data.get('security_threshold', 0) == 0 and sa > 0:
         # Ss = 1/3 * Sa
-        data['security_threshold'] = math.ceil(sa / 3.0)
+        data['security_threshold'] = ceil(sa / 3.0)
 
     db_obj = models.Article(**data)
     db.add(db_obj)
