@@ -16,6 +16,14 @@ def create_material_class(db: Session, material_class: schemas.MaterialClassCrea
     db.refresh(db_obj)
     return db_obj
 
+def create_material_classes_bulk(db: Session, material_classes: list[schemas.MaterialClassCreate]):
+    db_objs = [models.MaterialClass(code=mc.code, designation=mc.designation) for mc in material_classes]
+    db.add_all(db_objs)
+    db.commit()
+    for obj in db_objs:
+        db.refresh(obj)
+    return db_objs
+
 # --- SubClass ---
 def create_subclass(db: Session, subclass: schemas.SubClassCreate, class_id: int):
     db_obj = models.SubClass(**subclass.model_dump(), material_class_id=class_id)
@@ -23,6 +31,14 @@ def create_subclass(db: Session, subclass: schemas.SubClassCreate, class_id: int
     db.commit()
     db.refresh(db_obj)
     return db_obj
+
+def create_subclasses_bulk(db: Session, subclasses: list[schemas.SubClassCreate], class_id: int):
+    db_objs = [models.SubClass(**sub.model_dump(), material_class_id=class_id) for sub in subclasses]
+    db.add_all(db_objs)
+    db.commit()
+    for obj in db_objs:
+        db.refresh(obj)
+    return db_objs
 
 # --- Constructor ---
 def get_constructors(db: Session, skip: int = 0, limit: int = 100):
@@ -35,6 +51,14 @@ def create_constructor(db: Session, constructor: schemas.ConstructorCreate):
     db.refresh(db_obj)
     return db_obj
 
+def create_constructors_bulk(db: Session, constructors: list[schemas.ConstructorCreate]):
+    db_objs = [models.Constructor(code=c.code, designation=c.designation) for c in constructors]
+    db.add_all(db_objs)
+    db.commit()
+    for obj in db_objs:
+        db.refresh(obj)
+    return db_objs
+
 # --- Series ---
 def create_series(db: Session, series: schemas.SeriesCreate, constructor_id: int):
     db_obj = models.Series(**series.model_dump(), constructor_id=constructor_id)
@@ -42,6 +66,14 @@ def create_series(db: Session, series: schemas.SeriesCreate, constructor_id: int
     db.commit()
     db.refresh(db_obj)
     return db_obj
+
+def create_series_bulk(db: Session, series_list: list[schemas.SeriesCreate], constructor_id: int):
+    db_objs = [models.Series(**ser.model_dump(), constructor_id=constructor_id) for ser in series_list]
+    db.add_all(db_objs)
+    db.commit()
+    for obj in db_objs:
+        db.refresh(obj)
+    return db_objs
 
 # --- Article ---
 def get_articles(db: Session, skip: int = 0, limit: int = 100):
