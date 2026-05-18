@@ -1,6 +1,7 @@
 package tn.defense.gamma3.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -24,17 +25,23 @@ public class DataSeeder implements CommandLineRunner {
     private final ItemRepository itemRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${application.default-admin.matricule}")
+    private String adminMatricule;
+
+    @Value("${application.default-admin.password}")
+    private String adminPassword;
+
     @Override
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
             User admin = User.builder()
-                    .matricule("admin")
+                    .matricule(adminMatricule)
                     .fullName("Administrateur Système")
-                    .password(passwordEncoder.encode("admin"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .role(Role.ADMIN)
                     .build();
             userRepository.save(admin);
-            System.out.println("✅ Administrateur par défaut créé : admin/admin");
+            System.out.println("✅ Administrateur par défaut créé avec le matricule : " + adminMatricule);
         }
 
         if (magasinRepository.count() == 0) {
